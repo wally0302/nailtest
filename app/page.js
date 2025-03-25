@@ -19,7 +19,7 @@ export default function Home() {
   useEffect(() => {
     const initializeLiff = async () => {
       try {
-        await liff.init({ liffId: '2007124985-JOZYjrA' }); // 您的 LIFF ID
+        await liff.init({ liffId: '2007124985-JOZyYjrA' }); // 您的 LIFF ID
         if (!liff.isLoggedIn()) {
           liff.login();
           return;
