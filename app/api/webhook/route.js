@@ -64,7 +64,7 @@ export async function POST(request) {
                     action: {
                       type: "uri",
                       label: "我要預約",
-                      uri: "https://liff.line.me/2007124985-JOZYjrA", // 您的 LIFF URL
+                      uri: "https://liff.line.me/2007124985-JOZyYjrA", // 您的 LIFF URL
                     },
                   },
                 ],
