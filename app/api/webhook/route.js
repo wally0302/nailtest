@@ -1,11 +1,3 @@
-import { Client } from "@line/bot-sdk";
-
-// 初始化 LINE Bot 客戶端
-const client = new Client({
-  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-  channelSecret: process.env.LINE_CHANNEL_SECRET,
-});
-
 export async function POST(request) {
   try {
     // 解析 LINE 送來的訊息
@@ -20,23 +12,41 @@ export async function POST(request) {
 
         // 檢查用戶是否說「我要預約」
         if (userMessage.includes("我要預約")) {
-          // 用 LINE Bot 回應 Quick Reply 按鈕
-          await client.replyMessage(event.replyToken, {
-            type: "text",
-            text: "請選擇操作：",
-            quickReply: {
-              items: [
+          // 用 fetch 發送 LINE API 請求
+          const response = await fetch("https://api.line.me/v2/bot/message/reply", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`,
+            },
+            body: JSON.stringify({
+              replyToken: event.replyToken,
+              messages: [
                 {
-                  type: "action",
-                  action: {
-                    type: "uri",
-                    label: "我要預約",
-                    uri: "https://liff.line.me/2007124985-JOZYjrA", // 您的 LIFF URL
+                  type: "text",
+                  text: "請選擇操作：",
+                  quickReply: {
+                    items: [
+                      {
+                        type: "action",
+                        action: {
+                          type: "uri",
+                          label: "我要預約",
+                          uri: "https://liff.line.me/2007124985-JOZYjrA", // 您的 LIFF URL
+                        },
+                      },
+                    ],
                   },
                 },
               ],
-            },
+            }),
           });
+
+          // 檢查 LINE API 回應
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`LINE API 回應失敗: ${response.status} - ${errorText}`);
+          }
         }
       }
     }
