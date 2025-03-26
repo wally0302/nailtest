@@ -14,7 +14,7 @@ export default function Home() {
   const [form, setForm] = useState({ name: '', contact: '' });
   const [availableTimes, setAvailableTimes] = useState([]);
   const [userProfile, setUserProfile] = useState(null); // 用來存 LIFF 用戶資料
-
+  console.log('userProfile', userProfile);
   // LIFF 初始化
   useEffect(() => {
     const initializeLiff = async () => {
@@ -30,7 +30,7 @@ export default function Home() {
         // 自動填入用戶名稱
         setForm((prev) => ({ ...prev, name: profile.displayName }));
       } catch (error) {
-        console.error('LIFF 初始化失敗', error);
+        console.log('LIFF 初始化失敗', error);
       }
     };
 
@@ -99,7 +99,7 @@ export default function Home() {
       // 可選：關閉 LIFF 視窗
       liff.closeWindow();
     } catch (error) {
-      console.error('預約提交失敗', error);
+      console.log('預約提交失敗', error);
       alert('預約失敗，請稍後再試！');
     }
   };
