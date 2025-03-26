@@ -59,30 +59,44 @@ export default function Home() {
   // 處理預約提交
   const handleSubmit = async () => {
     try {
-      // 顯示預約成功訊息
+      if (!selectedDate || !selectedTime || !form.name || !form.contact) {
+        alert('請填寫完整的預約資訊');
+        return;
+      }
+  
+      // 格式化日期
+      const formattedDate = selectedDate.toLocaleDateString('zh-TW');
+  
+      // 建立訊息內容
       const message = `預約成功！\n` +
-                      `日期：${selectedDate.toLocaleDateString()}\n` +
+                      `日期：${formattedDate}\n` +
                       `時間：${selectedTime}\n` +
                       `姓名：${form.name}\n` +
                       `聯絡方式：${form.contact}`;
-
-      // 用 LIFF 發訊息給用戶
+  
+      // 確保 LIFF 已初始化並取得權限
+      if (!liff.isInClient()) {
+        alert('請在 LINE 應用程式內進行預約');
+        return;
+      }
+  
+      // 發送訊息
       await liff.sendMessages([
         {
           type: 'text',
           text: message,
         },
       ]);
-
+  
       alert('預約成功，已發送通知到您的 LINE！');
-
+  
       // 重置表單
       setStep(1);
       setSelectedDate(null);
       setSelectedTime(null);
       setForm({ name: '', contact: '' });
-
-      // 關閉 LIFF（可選）
+  
+      // 可選：關閉 LIFF 視窗
       liff.closeWindow();
     } catch (error) {
       console.error('預約提交失敗', error);
