@@ -64,35 +64,35 @@ export default function Home() {
         alert('請填寫完整的預約資訊');
         return;
       }
-
+  
       if (!liff.isInClient()) {
-        await logToServer('不在 LINE 環境中，無法發送訊息');
+        console.log('不在 LINE 環境中，無法發送訊息');
         alert('請在 LINE 應用程式內進行預約');
         return;
       }
-
+  
       if (!liff.isLoggedIn()) {
-        await logToServer('LIFF 未登入，無法發送訊息');
+        console.log('LIFF 未登入，無法發送訊息');
         alert('請重新登入 LINE');
         liff.login();
         return;
       }
-
+  
       const formattedDate = selectedDate.toLocaleDateString('zh-TW');
       const message = `預約成功！\n` +
                       `日期：${formattedDate}\n` +
                       `時間：${selectedTime}\n` +
                       `姓名：${form.name}\n` +
                       `聯絡方式：${form.contact}`;
-
-      await logToServer(`準備儲存預約並發送訊息: ${message}`);
-
+  
+      console.log(`準備儲存預約並發送訊息: ${message}`);
+  
       if (message.length > 5000) {
-        await logToServer('訊息長度超過 5000 字元，無法發送');
+        console.log('訊息長度超過 5000 字元，無法發送');
         alert('預約資訊過長，請縮短姓名或聯絡方式');
         return;
       }
-
+  
       const appointmentData = {
         date: formattedDate,
         time: selectedTime,
@@ -101,7 +101,7 @@ export default function Home() {
         userId: userProfile.userId,
         message,
       };
-
+  
       const saveResponse = await fetch('/api/save-appointment', {
         method: 'POST',
         headers: {
@@ -109,14 +109,14 @@ export default function Home() {
         },
         body: JSON.stringify(appointmentData),
       });
-
+  
       const saveResult = await saveResponse.json();
       if (!saveResponse.ok) {
         throw new Error(saveResult.message || '儲存預約失敗');
       }
-
-      await logToServer(`預約已存進 Firestore，ID: ${saveResult.id}`);
-
+  
+      console.log(`預約已存進 Firestore，ID: ${saveResult.id}`);
+  
       alert('預約成功，已發送通知到您的 LINE！');
       setStep(1);
       setSelectedDate(null);
@@ -125,7 +125,7 @@ export default function Home() {
       liff.closeWindow();
     } catch (error) {
       console.log('預約提交失敗', error);
-      await logToServer(`預約提交失敗: ${error.message}`);
+      console.log(`預約提交失敗: ${error.message}`);
       alert(`預約失敗：${error.message}，請稍後再試！`);
     }
   };
