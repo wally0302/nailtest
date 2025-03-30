@@ -57,50 +57,76 @@ export default function Home() {
   };
 
   // 處理預約提交
+
   const handleSubmit = async () => {
     try {
       if (!selectedDate || !selectedTime || !form.name || !form.contact) {
         alert('請填寫完整的預約資訊');
         return;
       }
-  
-      // 格式化日期
+
+      if (!liff.isInClient()) {
+        await logToServer('不在 LINE 環境中，無法發送訊息');
+        alert('請在 LINE 應用程式內進行預約');
+        return;
+      }
+
+      if (!liff.isLoggedIn()) {
+        await logToServer('LIFF 未登入，無法發送訊息');
+        alert('請重新登入 LINE');
+        liff.login();
+        return;
+      }
+
       const formattedDate = selectedDate.toLocaleDateString('zh-TW');
-  
-      // 建立訊息內容
       const message = `預約成功！\n` +
                       `日期：${formattedDate}\n` +
                       `時間：${selectedTime}\n` +
                       `姓名：${form.name}\n` +
                       `聯絡方式：${form.contact}`;
-  
-      // 確保 LIFF 已初始化並取得權限
-      if (!liff.isInClient()) {
-        alert('請在 LINE 應用程式內進行預約');
+
+      await logToServer(`準備儲存預約並發送訊息: ${message}`);
+
+      if (message.length > 5000) {
+        await logToServer('訊息長度超過 5000 字元，無法發送');
+        alert('預約資訊過長，請縮短姓名或聯絡方式');
         return;
       }
-  
-      // 發送訊息
-      await liff.sendMessages([
-        {
-          type: 'text',
-          text: message,
+
+      const appointmentData = {
+        date: formattedDate,
+        time: selectedTime,
+        name: form.name,
+        contact: form.contact,
+        userId: userProfile.userId,
+        message,
+      };
+
+      const saveResponse = await fetch('/api/save-appointment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ]);
-  
+        body: JSON.stringify(appointmentData),
+      });
+
+      const saveResult = await saveResponse.json();
+      if (!saveResponse.ok) {
+        throw new Error(saveResult.message || '儲存預約失敗');
+      }
+
+      await logToServer(`預約已存進 Firestore，ID: ${saveResult.id}`);
+
       alert('預約成功，已發送通知到您的 LINE！');
-  
-      // 重置表單
       setStep(1);
       setSelectedDate(null);
       setSelectedTime(null);
       setForm({ name: '', contact: '' });
-  
-      // 可選：關閉 LIFF 視窗
       liff.closeWindow();
     } catch (error) {
       console.log('預約提交失敗', error);
-      alert('預約失敗，請稍後再試！');
+      await logToServer(`預約提交失敗: ${error.message}`);
+      alert(`預約失敗：${error.message}，請稍後再試！`);
     }
   };
 
