@@ -150,6 +150,8 @@ export default function Home() {
               alt="頭貼"
               className="w-12 h-12 rounded-full mx-auto mt-2"
             />
+            {/* 後台連結 */}
+            <a href="/admin" className="text-blue-500 underline">前往後台（測試用）</a>
           </div>
         )}
 
