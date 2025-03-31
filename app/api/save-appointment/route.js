@@ -1,3 +1,4 @@
+// 前台至 firestore 存資料
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 
